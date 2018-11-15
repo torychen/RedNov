@@ -10,12 +10,18 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.tory.rednov.controller.AppSettingsListener;
+import com.tory.rednov.model.AppSettings;
+import com.tory.rednov.utilities.UtiToast;
+
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
     }
+
+    private AppSettings appSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +39,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+
+        /**
+         * Init app here.
+         */
+        UtiToast.setContext(MainActivity.this);
+        appSettings = new AppSettings(MainActivity.this, new AppSettingsListener() );
+
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.tory.rednov.model.AppSettings;
 import com.tory.rednov.model.IPCApplication;
 import com.tory.rednov.utilities.UtiToast;
 import com.tory.rednov.view.AppSettingsActivity;
+import com.tory.rednov.view.DiscoveryDialogFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
+    private DiscoveryDialogFragment discoveryDialogFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,12 +39,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        discoveryDialogFragment = new DiscoveryDialogFragment();
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                /*
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                */
+                discoveryDialogFragment.show(getSupportFragmentManager(),"Discoverying");
             }
         });
 

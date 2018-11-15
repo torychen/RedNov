@@ -34,12 +34,7 @@ public class AppSettingsFragment extends PreferenceFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        //TODO
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        final Preference debugFlag = findPreference("KeyDebugFlag");
-
-        
+        //do nothing so far.
         return super.onCreateView(inflater, container,savedInstanceState);
     }
 

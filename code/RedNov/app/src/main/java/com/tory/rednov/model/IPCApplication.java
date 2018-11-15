@@ -2,22 +2,25 @@ package com.tory.rednov.model;
 
 import android.app.Application;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IPCApplication extends Application {
     private static AppSettings appSettings;
-    private static IPCamera ipCamera;
+    private static List<IPCamera> ipCameraList;
 
     public static AppSettings getAppSettings() {
         return appSettings;
     }
 
-    public static IPCamera getIpCamera() {
-        return ipCamera;
+    public static List<IPCamera> getIpCamera() {
+        return ipCameraList;
     }
 
     @Override
     public void onCreate() {
         appSettings = new AppSettings();
-        ipCamera = new IPCamera();
+        ipCameraList = new ArrayList<>();
         super.onCreate();
     }
 }

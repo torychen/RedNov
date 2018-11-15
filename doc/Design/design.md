@@ -74,7 +74,3 @@ mercury 路由器 192.168.9.2 无密码， wifi ssid dlink@11111111
 
 AppSettings 通过 menu item 跳转到 activity，点击保存或取消后返回主界面。
 
-
-[Android开发——设置界面的创建](http://www.cnblogs.com/kexing/p/8548648.html)
-[Android：详解如何创建Google风格的SettingsActivity](https://www.jianshu.com/p/f5f8834ee9af)
-

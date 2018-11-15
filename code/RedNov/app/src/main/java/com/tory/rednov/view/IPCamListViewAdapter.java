@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.tory.rednov.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class IPCamListViewAdapter extends ArrayAdapter<IPCamItem> {
@@ -20,6 +21,7 @@ public class IPCamListViewAdapter extends ArrayAdapter<IPCamItem> {
         super(context,textViewResourceID, objects);
         resourceId = textViewResourceID;
     }
+
 
     //Optimization
     @NonNull

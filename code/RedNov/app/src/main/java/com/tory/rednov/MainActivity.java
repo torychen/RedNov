@@ -13,7 +13,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
+import com.tory.rednov.controller.onvif.FindDevicesThread;
 import com.tory.rednov.model.AppSettings;
+import com.tory.rednov.model.Device;
 import com.tory.rednov.model.IPCApplication;
 import com.tory.rednov.model.IPCam;
 import com.tory.rednov.utilities.UtiToast;
@@ -25,7 +27,7 @@ import com.tory.rednov.view.IPCamListViewAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, FindDevicesThread.FindDevicesListener {
 
     // Used to load the 'native-lib' library on application startup.
     /*
@@ -44,6 +46,47 @@ public class MainActivity extends AppCompatActivity {
 
     private DiscoveryDialogFragment discoveryDialogFragment;
 
+    //FindDevicesThread.FindDevicesListener callback.
+    @Override
+    public void searchResult(ArrayList<Device> devices) {
+        //Not found any devices.
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                discoveryDialogFragment.dismiss();
+                //adapter.notifyDataSetChanged();
+            }
+        });
+
+        if (devices.isEmpty()) {
+            if (IPCApplication.getAppSettings().getDebugFlag()){
+                List<IPCamItem> ipCamList = new ArrayList<>();
+                ipCamList.add(new IPCamItem("192.168.9.6", R.drawable.ic_ipcam));
+                ipCamList.add(new IPCamItem("192.168.9.100", R.drawable.ic_ipcam));
+                ipCamList.add(new IPCamItem("192.168.9.101", R.drawable.ic_ipcam));
+
+                IPCamListViewAdapter ipCamListViewAdapter = new IPCamListViewAdapter(
+                        MainActivity.this, R.layout.ipcam_item, ipCamList);
+
+                ListView lvIPCam = findViewById(R.id.lvIPCam);
+                lvIPCam.setAdapter(ipCamListViewAdapter);
+            }
+        }
+
+    }
+
+    //Floatbutton callback
+
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.fab:
+                discoveryDialogFragment.show(getSupportFragmentManager(),"Discovering");
+                //new FindDevicesThread(MainActivity.this, MainActivity.this).start();
+                break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,17 +98,7 @@ public class MainActivity extends AppCompatActivity {
         discoveryDialogFragment = new DiscoveryDialogFragment();
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                /*
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-
-                */
-                discoveryDialogFragment.show(getSupportFragmentManager(),"Discovering");
-            }
-        });
+        fab.setOnClickListener(this);
 
 
         /*

@@ -1,4 +1,4 @@
-package com.tory.rednov;
+package com.tory.rednov.view;
 
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.tory.rednov.R;
 import com.tory.rednov.view.AppSettingsFragment;
 
 public class AppSettingsActivity extends AppCompatActivity {

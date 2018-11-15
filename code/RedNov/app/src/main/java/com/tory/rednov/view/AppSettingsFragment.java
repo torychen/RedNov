@@ -38,6 +38,7 @@ public class AppSettingsFragment extends PreferenceFragment {
         //TODO
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         final Preference debugFlag = findPreference("KeyDebugFlag");
+
         
         return super.onCreateView(inflater, container,savedInstanceState);
     }

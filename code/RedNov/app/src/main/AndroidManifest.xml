@@ -21,7 +21,7 @@
         </activity>
 
         <activity
-            android:name=".AppSettingsActivity"
+            android:name=".view.AppSettingsActivity"
             android:label="@string/title_activity_app_settings"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">

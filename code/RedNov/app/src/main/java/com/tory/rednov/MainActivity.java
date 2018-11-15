@@ -11,18 +11,34 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 
+import com.tory.rednov.model.AppSettings;
 import com.tory.rednov.model.IPCApplication;
+import com.tory.rednov.model.IPCam;
 import com.tory.rednov.utilities.UtiToast;
 import com.tory.rednov.view.AppSettingsActivity;
 import com.tory.rednov.view.DiscoveryDialogFragment;
+import com.tory.rednov.view.IPCamItem;
+import com.tory.rednov.view.IPCamListViewAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
+    /*
     static {
         System.loadLibrary("native-lib");
     }
+    */
+
+    /**
+     * A native method that is implemented by the 'native-lib' native library,
+     * which is packaged with this application.
+     */
+    //public native String stringFromJNI();
 
     private static final String TAG = "MainActivity";
 
@@ -47,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
 
                 */
-                discoveryDialogFragment.show(getSupportFragmentManager(),"Discoverying");
+                discoveryDialogFragment.show(getSupportFragmentManager(),"Discovering");
             }
         });
 
@@ -56,6 +72,19 @@ public class MainActivity extends AppCompatActivity {
          * Init app here.
          */
         UtiToast.setContext(MainActivity.this);
+
+        if (IPCApplication.getAppSettings().getDebugFlag()){
+            List<IPCamItem> ipCamList = new ArrayList<>();
+            ipCamList.add(new IPCamItem("192.168.9.6", R.drawable.ic_ipcam));
+            ipCamList.add(new IPCamItem("192.168.9.100", R.drawable.ic_ipcam));
+            ipCamList.add(new IPCamItem("192.168.9.101", R.drawable.ic_ipcam));
+
+            IPCamListViewAdapter ipCamListViewAdapter = new IPCamListViewAdapter(
+                    MainActivity.this, R.layout.ipcam_item, ipCamList);
+
+            ListView lvIPCam = findViewById(R.id.lvIPCam);
+            lvIPCam.setAdapter(ipCamListViewAdapter);
+        }
     }
 
     @Override
@@ -83,11 +112,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
+
 
     void updateAppSettings() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);

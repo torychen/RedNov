@@ -1,17 +1,21 @@
 package com.tory.rednov;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.tory.rednov.controller.AppSettingsListener;
 import com.tory.rednov.model.AppSettings;
+import com.tory.rednov.model.IPCApplication;
 import com.tory.rednov.utilities.UtiToast;
 import com.tory.rednov.view.AppSettingsActivity;
 
@@ -23,8 +27,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static final String TAG = "MainActivity";
-    private AppSettings appSettings;
-    
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +50,6 @@ public class MainActivity extends AppCompatActivity {
          * Init app here.
          */
         UtiToast.setContext(MainActivity.this);
-        appSettings = new AppSettings(MainActivity.this, new AppSettingsListener() );
-
     }
 
     @Override
@@ -81,4 +82,18 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI();
+
+    void updateAppSettings() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        boolean debugFlag = sp.getBoolean(this.getString(R.string.pref_key_debug_flag), false);
+        IPCApplication.getAppSettings().setDebugFlag(debugFlag);
+
+        Log.d(TAG, "debug flag is " + debugFlag);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateAppSettings();
+    }
 }

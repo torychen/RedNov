@@ -3,6 +3,7 @@ package com.tory.rednov;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.tory.rednov.controller.onvif.FindDevicesThread;
+import com.tory.rednov.model.AppSettings;
 import com.tory.rednov.model.Device;
 import com.tory.rednov.model.IPCApplication;
 import com.tory.rednov.model.IPCam;
@@ -42,8 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     //public native String stringFromJNI();
 
-    private static final String TAG = "tory";
-
+    private static final String TAG = "MainActivity_CCC";
 
     //To show animation dialog when try to find device.
     private DiscoveryDialogFragment discoveryDialogFragment;
@@ -59,7 +60,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //FindDevicesThread.FindDevicesListener callback.
     @Override
     public void searchResult(final ArrayList<Device> devices) {
-        Log.d(TAG, "searchResult: callback");
         Device device;
         IPCamItem ipCamItem;
 
@@ -74,24 +74,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         } else {
             //No device found, for debug purpose, manually create some.
-            device = new Device();
-            device.setIpAddress("192.168.9.6");
-            this.devices.add(device);
+            if(IPCApplication.getAppSettings().getDebugFlag()) {
+                device = new Device();
+                device.setIpAddress("192.168.9.6");
+                this.devices.add(device);
 
-            ipCamItem = new IPCamItem("192.168.9.6", R.drawable.ic_ipcam, 0);
-            ipCamList.add(ipCamItem);
+                ipCamItem = new IPCamItem("192.168.9.6", R.drawable.ic_ipcam, 0);
+                ipCamList.add(ipCamItem);
 
-            device = new Device();
-            this.devices.add(device);
+                device = new Device();
+                this.devices.add(device);
 
-            ipCamItem = new IPCamItem("192.168.9.101", R.drawable.ic_ipcam, 1);
-            ipCamList.add(ipCamItem);
+                ipCamItem = new IPCamItem("192.168.9.101", R.drawable.ic_ipcam, 1);
+                ipCamList.add(ipCamItem);
 
-            device = new Device();
-            this.devices.add(device);
+                device = new Device();
+                this.devices.add(device);
 
-            ipCamItem = new IPCamItem("192.168.9.102", R.drawable.ic_ipcam, 2);
-            ipCamList.add(ipCamItem);
+                ipCamItem = new IPCamItem("192.168.9.102", R.drawable.ic_ipcam, 2);
+                ipCamList.add(ipCamItem);
+
+                ipCamItem = new IPCamItem("", R.drawable.ic_add, 3);
+                ipCamList.add(ipCamItem);
+
+                ipCamItem = new IPCamItem("", R.drawable.ic_add, 4);
+                ipCamList.add(ipCamItem);
+            }
+
         }
 
         runOnUiThread(new Runnable() {
@@ -105,35 +114,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         });
-
-        /*
-        if (devices.isEmpty()) {
-            if (IPCApplication.getAppSettings().getDebugFlag()){
-
-                ipCamList.add(new IPCamItem("192.168.9.6", R.drawable.ic_ipcam));
-                ipCamList.add(new IPCamItem("192.168.9.100", R.drawable.ic_ipcam));
-                ipCamList.add(new IPCamItem("192.168.9.101", R.drawable.ic_ipcam));
-
-
-            }
-        }*/
     }
 
-    //Floatbutton callback
+    //Button callback
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab:
                 discoveryDialogFragment.show(getSupportFragmentManager(),"Discovering");
 
-                /*new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d(TAG, "try to create a thread.");
-                    }
-                }).start();*/
-
-                new FindDevicesThread((Context) MainActivity.this, (FindDevicesThread.FindDevicesListener) MainActivity.this).start();
+                new FindDevicesThread(MainActivity.this, MainActivity.this).start();
                 break;
         }
     }
@@ -144,6 +134,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //Restore state by Bundle
+        if (savedInstanceState != null) {
+            savedInstanceState.get("save_something");
+            Log.d(TAG, "onCreate: you saved msg is: " + savedInstanceState.get("save_something"));
+
+        }
 
         discoveryDialogFragment = new DiscoveryDialogFragment();
 
@@ -156,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          */
         UtiToast.setContext(MainActivity.this);
 
-        //Init IPCam for view
+        //Init IPCamList for view
         ipCamList = new ArrayList<>();
         ipCamListViewAdapter = new IPCamListViewAdapter(
                 MainActivity.this, R.layout.ipcam_item, ipCamList);
@@ -193,8 +190,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
-
-
     void updateAppSettings() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         boolean debugFlag = sp.getBoolean(this.getString(R.string.pref_key_debug_flag), false);
@@ -207,6 +202,50 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         updateAppSettings();
+        ipCamListViewAdapter.notifyDataSetChanged();
         Log.d(TAG, "onResume: done.");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState: ");
+        outState.putString("save_something", "debug same Mainactivity data.");
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "onRestoreInstanceState: ");
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged: ");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop: ");
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart: ");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart: ");
     }
 }

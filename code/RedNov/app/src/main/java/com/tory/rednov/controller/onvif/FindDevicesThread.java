@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class FindDevicesThread extends Thread {
 
-    private static final String TAG = "tory";
+    private static final String TAG = "FindDevicesThread_CCC";
 
     private byte[] sendData;
     private boolean readResult = false;

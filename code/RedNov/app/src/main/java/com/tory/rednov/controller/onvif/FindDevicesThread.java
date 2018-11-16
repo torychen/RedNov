@@ -1,6 +1,7 @@
 package com.tory.rednov.controller.onvif;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.tory.rednov.model.Device;
 import com.tory.rednov.utilities.XmlDecodeUtil;
@@ -20,6 +21,8 @@ import java.util.ArrayList;
 
 public class FindDevicesThread extends Thread {
 
+    private static final String TAG = "tory";
+
     private byte[] sendData;
     private boolean readResult = false;
     private boolean receiveTag = true;
@@ -30,11 +33,13 @@ public class FindDevicesThread extends Thread {
     public FindDevicesThread(Context context, FindDevicesListener listener) {
         this.listener = listener;
         InputStream fis = null;
+        boolean readFileOk = false;
         try {
             //从assets读取文件
             fis = context.getAssets().open("probe.xml");
             sendData = new byte[fis.available()];
             readResult = fis.read(sendData) > 0;
+            readFileOk = true;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -46,16 +51,18 @@ public class FindDevicesThread extends Thread {
                 }
             }
         }
+
+        Log.d(TAG, "FindDevicesThread: readfile:" + readFileOk);
     }
 
     @Override
     public void run() {
-        super.run();
+        //设备列表集合
+        ArrayList<Device> devices = new ArrayList<>();
         DatagramSocket udpSocket = null;
         DatagramPacket receivePacket;
         DatagramPacket sendPacket;
-        //设备列表集合
-        ArrayList<Device> devices = new ArrayList<>();
+
         byte[] by = new byte[1024 * 3];
         if (readResult) {
             try {
@@ -88,6 +95,7 @@ public class FindDevicesThread extends Thread {
         }
 
         receiveTag = false;
+
         //回调结果
         if (listener != null) {
             listener.searchResult(devices);

@@ -1,5 +1,6 @@
 package com.tory.rednov;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,7 +15,6 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.tory.rednov.controller.onvif.FindDevicesThread;
-import com.tory.rednov.model.AppSettings;
 import com.tory.rednov.model.Device;
 import com.tory.rednov.model.IPCApplication;
 import com.tory.rednov.model.IPCam;
@@ -42,48 +42,78 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     //public native String stringFromJNI();
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "tory";
 
+
+    //To show animation dialog when try to find device.
     private DiscoveryDialogFragment discoveryDialogFragment;
+
+    //Device list.
+    List<Device> devices;
+
+    //IPCam list to be shown on View.
+    List<IPCamItem> ipCamList;
+    IPCamListViewAdapter ipCamListViewAdapter;
+
 
     //FindDevicesThread.FindDevicesListener callback.
     @Override
-    public void searchResult(ArrayList<Device> devices) {
-        //Not found any devices.
+    public void searchResult(final ArrayList<Device> devices) {
+        Log.d(TAG, "searchResult: callback");
+        final boolean isNoDevice = devices.isEmpty();
+        if (!isNoDevice) {
+            Device device;
+            IPCamItem ipCamItem;
+            //Update IPCam list for view and Device list.
+            for (int i = 0; i < devices.size(); i++) {
+                device = devices.get(i);
+                this.devices.add(device);
+
+                ipCamItem = new IPCamItem(device.getServiceUrl(), R.drawable.ic_ipcam, i);
+                ipCamList.add(ipCamItem);
+            }
+        }
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 discoveryDialogFragment.dismiss();
-                //adapter.notifyDataSetChanged();
+                if (isNoDevice) {
+                    UtiToast.Toast("No devices are found. Please check.");
+                } else {
+                    ipCamListViewAdapter.notifyDataSetChanged();
+                }
             }
         });
 
+        /*
         if (devices.isEmpty()) {
             if (IPCApplication.getAppSettings().getDebugFlag()){
-                List<IPCamItem> ipCamList = new ArrayList<>();
+
                 ipCamList.add(new IPCamItem("192.168.9.6", R.drawable.ic_ipcam));
                 ipCamList.add(new IPCamItem("192.168.9.100", R.drawable.ic_ipcam));
                 ipCamList.add(new IPCamItem("192.168.9.101", R.drawable.ic_ipcam));
 
-                IPCamListViewAdapter ipCamListViewAdapter = new IPCamListViewAdapter(
-                        MainActivity.this, R.layout.ipcam_item, ipCamList);
 
-                ListView lvIPCam = findViewById(R.id.lvIPCam);
-                lvIPCam.setAdapter(ipCamListViewAdapter);
             }
-        }
-
+        }*/
     }
 
     //Floatbutton callback
-
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab:
                 discoveryDialogFragment.show(getSupportFragmentManager(),"Discovering");
-                //new FindDevicesThread(MainActivity.this, MainActivity.this).start();
+
+                /*new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "try to create a thread.");
+                    }
+                }).start();*/
+
+                new FindDevicesThread((Context) MainActivity.this, (FindDevicesThread.FindDevicesListener) MainActivity.this).start();
                 break;
         }
     }
@@ -106,18 +136,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          */
         UtiToast.setContext(MainActivity.this);
 
-        if (IPCApplication.getAppSettings().getDebugFlag()){
-            List<IPCamItem> ipCamList = new ArrayList<>();
-            ipCamList.add(new IPCamItem("192.168.9.6", R.drawable.ic_ipcam));
-            ipCamList.add(new IPCamItem("192.168.9.100", R.drawable.ic_ipcam));
-            ipCamList.add(new IPCamItem("192.168.9.101", R.drawable.ic_ipcam));
+        //Init IPCam for view
+        ipCamList = new ArrayList<>();
+        ipCamListViewAdapter = new IPCamListViewAdapter(
+                MainActivity.this, R.layout.ipcam_item, ipCamList);
 
-            IPCamListViewAdapter ipCamListViewAdapter = new IPCamListViewAdapter(
-                    MainActivity.this, R.layout.ipcam_item, ipCamList);
+        ListView lvIPCam = findViewById(R.id.lvIPCam);
+        lvIPCam.setAdapter(ipCamListViewAdapter);
 
-            ListView lvIPCam = findViewById(R.id.lvIPCam);
-            lvIPCam.setAdapter(ipCamListViewAdapter);
-        }
+        //Init Device for FindDeviceThread.
+        devices = new ArrayList<>();
     }
 
     @Override
@@ -159,5 +187,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         updateAppSettings();
+        Log.d(TAG, "onResume: done.");
     }
 }

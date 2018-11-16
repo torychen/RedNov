@@ -3,10 +3,12 @@ package com.tory.rednov.view;
 public class IPCamItem {
     private String ip;
     private int imageId;
+    private int position;//map to the position in devices list.
 
-    public IPCamItem(String ip, int imageId) {
+    public IPCamItem(String ip, int imageId, int pos) {
         this.ip = ip;
         this.imageId = imageId;
+        this.position = pos;
     }
 
     public String getIp()
@@ -16,5 +18,13 @@ public class IPCamItem {
 
     public int getImageId() {
         return imageId;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    public int getPosition() {
+        return position;
     }
 }

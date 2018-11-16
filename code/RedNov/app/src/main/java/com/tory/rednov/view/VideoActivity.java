@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -40,8 +41,6 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_video);
         Intent intent = getIntent();
         String ip = intent.getStringExtra(getString(R.string.intent_key_ip));
-
-
 
 
         SeekBar seekBar = findViewById(R.id.sbVideoProgress);
@@ -82,19 +81,20 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btnPlayFile:
                 if (!isPlaying) {
 
-                    File sdRoot = Environment.getExternalStorageDirectory();
-                    Log.d(TAG, "sd abs root is " + sdRoot.getAbsolutePath());
-                    Log.d(TAG, "sd relative root is " + sdRoot.getPath());
+                    ///storage/emulated/0/ is phone memory
+                    File[] files;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        files = getExternalFilesDirs(Environment.MEDIA_MOUNTED);
+                        for (File file : files) {
+                            Log.d(TAG, "current storage path have:" + file.getAbsolutePath());
+                        }
+                    }
 
-                    File file1 = new File(Environment.getExternalStorageDirectory(), "/test.mp4");
-                    File file2 = new File(Environment.getExternalStorageDirectory(), "/test.mp4");
-                    if (file1.exists()) {
-                        videoView.setVideoPath(file1.getPath()); // 指定视频文件的路径
+                    File file = new File(Environment.getExternalStorageDirectory(), "/test.mp4");
+                    if (file.exists()) {
+                        videoView.setVideoPath(file.getPath()); // 指定视频文件的路径
+                        Log.d(TAG, "sd path is " + file.getPath());
 
-                        Log.d(TAG, "sd path is " + file1.getPath());
-                    } else if (file2.exists()) {
-                        videoView.setVideoPath(file2.getPath()); // 指定视频文件的路径
-                        Log.d(TAG, "sd path is " + file2.getPath());
                     } else {
                         UtiToast.Toast("file NOT found. please check.");
                         return;

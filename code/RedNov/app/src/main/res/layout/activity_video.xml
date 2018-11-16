@@ -8,7 +8,7 @@
     tools:context=".view.VideoActivity">
 
     <LinearLayout
-        app:layout_constraintVertical_weight="2"
+        app:layout_constraintVertical_weight="1"
         android:id="@+id/llPlayControl"
         android:layout_width="match_parent"
         android:orientation="horizontal"
@@ -30,17 +30,12 @@
 
 
     <LinearLayout
-        app:layout_constraintVertical_weight="8"
+        app:layout_constraintVertical_weight="9"
         app:layout_constraintTop_toBottomOf="@+id/llPlayControl"
         android:id="@+id/llVideoMain"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="0dp">
-
-        <EditText
-            android:hint="the file path"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
         <Button
             android:text="play file"
@@ -52,7 +47,6 @@
             android:id="@+id/vvMain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
 
 
     </LinearLayout>

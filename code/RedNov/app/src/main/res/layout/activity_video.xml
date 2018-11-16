@@ -8,19 +8,8 @@
     tools:context=".view.VideoActivity">
 
     <LinearLayout
-        app:layout_constraintVertical_weight="8"
-        android:layout_width="match_parent"
-        android:layout_height="0dp">
-
-        <VideoView
-            android:id="@+id/vvMain"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    </LinearLayout>
-
-    <LinearLayout
         app:layout_constraintVertical_weight="2"
+        android:id="@+id/llPlayControl"
         android:layout_width="match_parent"
         android:orientation="horizontal"
         android:layout_height="0dp">
@@ -37,8 +26,38 @@
             android:layout_weight="8"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        app:layout_constraintVertical_weight="8"
+        app:layout_constraintTop_toBottomOf="@+id/llPlayControl"
+        android:id="@+id/llVideoMain"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+
+        <EditText
+            android:hint="the file path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:text="play file"
+            android:id="@+id/btnPlayFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <VideoView
+            android:id="@+id/vvMain"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
 
     </LinearLayout>
+
+
 
 
 

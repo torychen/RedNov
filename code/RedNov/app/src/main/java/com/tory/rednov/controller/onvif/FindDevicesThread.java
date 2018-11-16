@@ -21,8 +21,10 @@ import java.util.ArrayList;
 public class FindDevicesThread extends Thread {
 
     private byte[] sendData;
-    private boolean readResult = false, receiveTag = true;
-    //回调借口
+    private boolean readResult = false;
+    private boolean receiveTag = true;
+
+    //回调接口
     private FindDevicesListener listener;
 
     public FindDevicesThread(Context context, FindDevicesListener listener) {
@@ -84,6 +86,7 @@ public class FindDevicesThread extends Thread {
                 }
             }
         }
+
         receiveTag = false;
         //回调结果
         if (listener != null) {

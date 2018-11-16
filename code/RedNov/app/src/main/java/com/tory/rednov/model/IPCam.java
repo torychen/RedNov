@@ -1,6 +1,6 @@
 package com.tory.rednov.model;
 
-public class IPCamera {
+public class IPCam {
     private User user;
     private IPSettings ipSettings;
 

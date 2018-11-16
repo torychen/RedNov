@@ -58,7 +58,7 @@ mercury 路由器 192.168.9.2 无密码， wifi ssid dlink@11111111
 用户能够手动添加 ipc
 
 
-### UseCase 读取AppSettigns 【done】
+### UseCase001 读取AppSettigns 【done】
 用 Preference 控件， 封装了 SharedPreference
 
 用户打开 App 时， 读取整个 AppSettings， 并更新view。
@@ -66,23 +66,26 @@ mercury 路由器 192.168.9.2 无密码， wifi ssid dlink@11111111
 
 AppSettings 通过 menu item 跳转到 activity，点击保存或取消后返回主界面。
 
-### UseCase 用户手动添加IPCam
+### UseCase002 用户手动添加IPCam
 用户，点击空白的区域，弹出对话框，让用户输入 IPCam 的搜索路径 如下：
 
 Add Device
 URI： http://192.168.0.1/onvif/device_service
 Apply Cancel
 
+### UseCase003 用户点击已有IPCam 进入播放界面
+
+
 ---
 
 
 2018-11-15 task
 【done】点击 setting， 打开debug 选项
-
-点击 discovery， 搜索 ， 如果 debug ， 把192.168.9.6 加入 
-    创建线程发送 udp 包时崩溃。
-
+【done】点击 discovery， 搜索 ， 如果 debug ， 把192.168.9.6 加入 
     
+
+
+2018-11-16
 可以 手动添加设备
 
 viewo view 播放 rtsp

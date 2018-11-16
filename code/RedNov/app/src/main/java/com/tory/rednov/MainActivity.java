@@ -9,10 +9,12 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.tory.rednov.controller.onvif.FindDevicesThread;
@@ -25,6 +27,7 @@ import com.tory.rednov.view.AppSettingsActivity;
 import com.tory.rednov.view.DiscoveryDialogFragment;
 import com.tory.rednov.view.IPCamItem;
 import com.tory.rednov.view.IPCamListViewAdapter;
+import com.tory.rednov.view.VideoActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,6 +163,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ListView lvIPCam = findViewById(R.id.lvIPCam);
         lvIPCam.setAdapter(ipCamListViewAdapter);
+
+        //Jump to video activity when click valid IPCam.
+        //Add a IPCam manually when click empty slot.
+        lvIPCam.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                IPCamItem ipCamItem = ipCamList.get(position);
+                if (TextUtils.isEmpty(ipCamItem.getIp())) {
+                    Log.d(TAG, "onItemClick: an empty item");
+                } else {
+                    String ip = ipCamItem.getIp();
+                    Log.d(TAG, "onItemClick: ip is " + ip);
+                    Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+                    intent.putExtra(getString(R.string.intent_key_ip), ip);
+                    startActivity(intent);
+                }
+
+            }
+        });
 
         //Init Device for FindDeviceThread.
         devices = new ArrayList<>();

@@ -60,10 +60,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void searchResult(final ArrayList<Device> devices) {
         Log.d(TAG, "searchResult: callback");
-        final boolean isNoDevice = devices.isEmpty();
-        if (!isNoDevice) {
-            Device device;
-            IPCamItem ipCamItem;
+        Device device;
+        IPCamItem ipCamItem;
+
+        if (!devices.isEmpty()) {
             //Update IPCam list for view and Device list.
             for (int i = 0; i < devices.size(); i++) {
                 device = devices.get(i);
@@ -72,13 +72,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ipCamItem = new IPCamItem(device.getServiceUrl(), R.drawable.ic_ipcam, i);
                 ipCamList.add(ipCamItem);
             }
+        } else {
+            //No device found, for debug purpose, manually create some.
+            device = new Device();
+            device.setIpAddress("192.168.9.6");
+            this.devices.add(device);
+
+            ipCamItem = new IPCamItem("192.168.9.6", R.drawable.ic_ipcam, 0);
+            ipCamList.add(ipCamItem);
+
+            device = new Device();
+            this.devices.add(device);
+
+            ipCamItem = new IPCamItem("192.168.9.101", R.drawable.ic_ipcam, 1);
+            ipCamList.add(ipCamItem);
+
+            device = new Device();
+            this.devices.add(device);
+
+            ipCamItem = new IPCamItem("192.168.9.102", R.drawable.ic_ipcam, 2);
+            ipCamList.add(ipCamItem);
         }
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 discoveryDialogFragment.dismiss();
-                if (isNoDevice) {
+                if (ipCamList.isEmpty()) {
                     UtiToast.Toast("No devices are found. Please check.");
                 } else {
                     ipCamListViewAdapter.notifyDataSetChanged();

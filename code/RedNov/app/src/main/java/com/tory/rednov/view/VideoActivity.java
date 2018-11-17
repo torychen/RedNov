@@ -2,6 +2,7 @@ package com.tory.rednov.view;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -191,4 +192,27 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
         Log.d(TAG, "onDestroy: video");
     }
+
+    /*
+    https://blog.csdn.net/u013274497/article/details/79041912
+    //Not test yet
+    public void changeVideoSize() {
+        int videoWidth = mediaPlayer.getVideoWidth();
+        int videoHeight = mediaPlayer.getVideoHeight();
+
+        //根据视频尺寸去计算->视频可以在sufaceView中放大的最大倍数。 float max;
+        if (getResources().getConfiguration().orientation== ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            //竖屏模式下按视频宽度计算放大倍数值 max = Math.max((float) videoWidth / (float) surfaceWidth,(float) videoHeight / (float) surfaceHeight);
+        } else{
+            //横屏模式下按视频高度计算放大倍数值 max = Math.max(((float) videoWidth/(float) surfaceHeight),(float) videoHeight/(float) surfaceWidth);
+        }
+
+        //视频宽高分别/最大倍数值 计算出放大后的视频尺寸 videoWidth = (int) Math.ceil((float) videoWidth / max);
+        videoHeight = (int) Math.ceil((float) videoHeight / max);
+
+        //无法直接设置视频尺寸，将计算出的视频尺寸设置到surfaceView 让视频自动填充。
+        surfaceView.setLayoutParams(new RelativeLayout.LayoutParams(videoWidth, videoHeight));
+    }
+    */
+
 }

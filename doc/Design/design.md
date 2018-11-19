@@ -73,7 +73,9 @@ Add Device
 URI： http://192.168.0.1/onvif/device_service
 Apply Cancel
 
-### UseCase003 用户点击已有IPCam 进入播放界面
+### UseCase003 用户点击已有IPCam 进入播放界面， 开始缓存时，要有提示。
+
+### UseCase004 播放全屏，点击时出现控制界面
 
 
 ---
@@ -90,6 +92,7 @@ Apply Cancel
 
 viewo view 播放 rtsp
 
+debug情况下， list 里有本地文件，默认 ipc ，默认网络 调试视频
 
 
 

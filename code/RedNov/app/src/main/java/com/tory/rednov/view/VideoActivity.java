@@ -1,25 +1,18 @@
 package com.tory.rednov.view;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.MediaController;
 import android.widget.SeekBar;
-import android.widget.VideoView;
 
-import com.tory.rednov.MainActivity;
 import com.tory.rednov.R;
 import com.tory.rednov.utilities.UtiToast;
 
@@ -31,20 +24,22 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
 public class VideoActivity extends AppCompatActivity implements View.OnClickListener {
-    private static final String TAG = "VideoActivity_CCC";
+    private static final String TAG = "VideoActivity>>>> ";
 
     //private static final String DEBUG_URI = "rtsp://admin:888888@192.168.9.100:10554/tcp/av0_0";
-    private static final String DEBUG_URI2 = "rtsp://admin:admin@192.168.9.6:554/0";
     private static final String DEBUG_URI_ONLINE = "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov";
+    private static final String DEBUG_URI_LOCALFILE = "/storage/emulated/0/test.mp4";
+    private static final String DEBUG_URI_INFRARED_IPC = "rtsp://admin:admin@192.168.9.6:554/0";
 
     private boolean isPlaying = false;
 
-    //private VideoView videoView;
     private SurfaceView svVideoMain;
 
     private MediaPlayer mediaPlayer;
 
-    private String videoUri;
+    private Uri videoUri;
+
+    private static final boolean DEBUG_INPUT_IP = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +47,24 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_video);
         Intent intent = getIntent();
         String ip = intent.getStringExtra(getString(R.string.intent_key_ip));
+        Log.d(TAG, "onCreate: the ip is " + ip);
+        videoUri = getUri(ip);
+        if (videoUri == null) {
+            UtiToast.Toast("The ip is invalid, please check out.");
+            finish();
+        }
+
+        Log.d(TAG, "onCreate: the uri is " + videoUri);
+
+        if (DEBUG_INPUT_IP) {
+            finish();
+            return;
+        }
 
 
         SeekBar seekBar = findViewById(R.id.sbVideoProgress);
         seekBar.setMax(100);
         seekBar.setProgress(1);
-
-        //videoView = findViewById(R.id.vvMain);
-        //videoView.setMediaController(new MediaController(this));
 
         Button btnPlay = findViewById(R.id.btnPlayVideo);
         btnPlay.setOnClickListener(this);
@@ -79,14 +84,12 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             }
 
             mediaPlayer = new MediaPlayer(libVLC);
-            String url = getUri();
 
-            //
             mediaPlayer.getVLCVout().setVideoSurface(svVideoMain.getHolder().getSurface(), svVideoMain.getHolder());
             //播放前还要调用这个方法
             mediaPlayer.getVLCVout().attachViews();
 
-            Media media = new Media(libVLC, Uri.parse(url));
+            Media media = new Media(libVLC, videoUri);
 
             mediaPlayer.setMedia(media);
             mediaPlayer.play();
@@ -96,25 +99,38 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    private String getUri() {
-        return DEBUG_URI_ONLINE;
+    private Uri getUri(String ip) {
+        if (TextUtils.isEmpty(ip)) {
+            Log.e(TAG, "getUri: the input ip is null, please check!", null);
+            return null;
+        }
+
+        Uri uri = null;
+
+        if (ip.equals(getString(R.string.play_list_local_file_ip))) {
+            File file = new File(DEBUG_URI_LOCALFILE);
+            if (file.exists()) {
+                uri = Uri.fromFile(file);
+            }
+            else {
+                UtiToast.Toast("The file" + DEBUG_URI_LOCALFILE + "does NOT exists.");
+            }
+
+        } else if (ip.equals(getString(R.string.play_list_internet_ip))) {
+            uri = Uri.parse(DEBUG_URI_ONLINE);
+        } else if (ip.equals(getString(R.string.play_list_infrared_ipc_ip))) {
+            uri = Uri.parse(DEBUG_URI_INFRARED_IPC);
+        } else {
+            Log.e(TAG, "getUri: invalid ip! please check.", null);
+        }
+
+        return uri;
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnPlayVideo:
-                if (!isPlaying) {
-                    isPlaying = true;
-                    videoUri = getUri();
-                    Log.d(TAG, "onCreate: the uri is " + videoUri);
-
-                    //videoView.setVideoURI(Uri.parse(videoUri));
-                    //videoView.requestFocus();
-                    //videoView.start();
-                    Log.d(TAG, "onClick: play");
-                }
-                break;
 
             case R.id.btnPlayFile:
                 if (!isPlaying) {

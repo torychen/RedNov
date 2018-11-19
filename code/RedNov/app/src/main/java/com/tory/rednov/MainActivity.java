@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     //public native String stringFromJNI();
 
-    private static final String TAG = "MainActivity_CCC";
+    private static final String TAG = "MainActivity>>>> ";
 
     //To show animation dialog when try to find device.
     private DiscoveryDialogFragment discoveryDialogFragment;
@@ -84,23 +85,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //No device found, for debug purpose, manually create some.
             if(IPCApplication.getAppSettings().getDebugFlag()) {
                 device = new Device();
-                device.setIpAddress("192.168.9.6");
+                device.setIpAddress(getString(R.string.play_list_local_file_ip));
                 this.devices.add(device);
 
-                ipCamItem = new IPCamItem("192.168.9.6", R.drawable.ic_ipcam, 0);
+                ipCamItem = new IPCamItem(getString(R.string.play_list_local_file_ip), R.drawable.ic_ipcam, 0);
                 ipCamList.add(ipCamItem);
 
                 device = new Device();
+                device.setIpAddress(getString(R.string.play_list_infrared_ipc_ip));
                 this.devices.add(device);
 
-                ipCamItem = new IPCamItem("192.168.9.101", R.drawable.ic_ipcam, 1);
+                ipCamItem = new IPCamItem(getString(R.string.play_list_infrared_ipc_ip), R.drawable.ic_ipcam, 1);
                 ipCamList.add(ipCamItem);
 
                 device = new Device();
+                device.setIpAddress(getString(R.string.play_list_internet_ip));
                 this.devices.add(device);
 
-                ipCamItem = new IPCamItem("192.168.9.102", R.drawable.ic_ipcam, 2);
+                ipCamItem = new IPCamItem(getString(R.string.play_list_internet_ip), R.drawable.ic_ipcam, 2);
                 ipCamList.add(ipCamItem);
+
+
 
                 ipCamItem = new IPCamItem("", R.drawable.ic_add, 3);
                 ipCamList.add(ipCamItem);
@@ -283,7 +288,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //For sd permission
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 1:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

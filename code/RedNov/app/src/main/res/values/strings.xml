@@ -4,4 +4,8 @@
     <string name="title_activity_app_settings">App Settings</string>
     <string name="btn_play">play</string>
     <string name="intent_key_ip">ip</string>
+    <string name="play_list_infrared_ipc_ip">192.168.9.6</string>
+    <string name="play_list_internet_ip">184.72.239.149</string>
+    <string name="play_list_local_file_ip">127.0.0.1</string>
+
 </resources>

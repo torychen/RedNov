@@ -2,6 +2,7 @@ package com.tory.rednov.view;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -11,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.MediaController;
@@ -22,16 +24,25 @@ import com.tory.rednov.R;
 import com.tory.rednov.utilities.UtiToast;
 
 import java.io.File;
+import java.util.ArrayList;
+
+import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.Media;
+import org.videolan.libvlc.MediaPlayer;
 
 public class VideoActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "VideoActivity_CCC";
 
     //private static final String DEBUG_URI = "rtsp://admin:888888@192.168.9.100:10554/tcp/av0_0";
     private static final String DEBUG_URI2 = "rtsp://admin:admin@192.168.9.6:554/0";
+    private static final String DEBUG_URI_ONLINE = "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov";
 
     private boolean isPlaying = false;
 
-    private VideoView videoView;
+    //private VideoView videoView;
+    private SurfaceView svVideoMain;
+
+    private MediaPlayer mediaPlayer;
 
     private String videoUri;
 
@@ -47,19 +58,46 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         seekBar.setMax(100);
         seekBar.setProgress(1);
 
-        videoView = findViewById(R.id.vvMain);
-        videoView.setMediaController(new MediaController(this));
-
+        //videoView = findViewById(R.id.vvMain);
+        //videoView.setMediaController(new MediaController(this));
 
         Button btnPlay = findViewById(R.id.btnPlayVideo);
         btnPlay.setOnClickListener(this);
 
         Button btnPlayFile = findViewById(R.id.btnPlayFile);
         btnPlayFile.setOnClickListener(this);
+
+        svVideoMain  = findViewById(R.id.svVideoMain);
+        LibVLC libVLC;
+        ArrayList<String> options = new ArrayList<>();
+        libVLC = new LibVLC(getApplication(), options);
+        try {
+            if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
+
+            mediaPlayer = new MediaPlayer(libVLC);
+            String url = getUri();
+
+            //
+            mediaPlayer.getVLCVout().setVideoSurface(svVideoMain.getHolder().getSurface(), svVideoMain.getHolder());
+            //播放前还要调用这个方法
+            mediaPlayer.getVLCVout().attachViews();
+
+            Media media = new Media(libVLC, Uri.parse(url));
+
+            mediaPlayer.setMedia(media);
+            mediaPlayer.play();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String getUri() {
-        return DEBUG_URI2;
+        return DEBUG_URI_ONLINE;
     }
 
     @Override
@@ -71,9 +109,9 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
                     videoUri = getUri();
                     Log.d(TAG, "onCreate: the uri is " + videoUri);
 
-                    videoView.setVideoURI(Uri.parse(videoUri));
-                    videoView.requestFocus();
-                    videoView.start();
+                    //videoView.setVideoURI(Uri.parse(videoUri));
+                    //videoView.requestFocus();
+                    //videoView.start();
                     Log.d(TAG, "onClick: play");
                 }
                 break;
@@ -92,7 +130,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
                     File file = new File(Environment.getExternalStorageDirectory(), "/test.mp4");
                     if (file.exists()) {
-                        videoView.setVideoPath(file.getPath()); // 指定视频文件的路径
+                        //videoView.setVideoPath(file.getPath()); // 指定视频文件的路径
                         Log.d(TAG, "sd path is " + file.getPath());
 
                     } else {
@@ -102,10 +140,12 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
                     isPlaying = true;
 
-                    videoView.requestFocus();
-                    videoView.start();
+                    //videoView.requestFocus();
+                    //videoView.start();
                     Log.d(TAG, "onClick: play");
                 } else {
+                    //TODO Should pause playing.
+                    Log.d(TAG, "should pause video.");
 
 
                 }
@@ -117,25 +157,62 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
+        if (mediaPlayer != null) {
+            mediaPlayer.play();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        videoView.pause();
+        //videoView.pause();
+        if (mediaPlayer != null) {
+            mediaPlayer.pause();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        videoView.pause();
+        //videoView.pause();
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        videoView.suspend();
         isPlaying = false;
+
+        //videoView.suspend();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
+
         Log.d(TAG, "onDestroy: video");
     }
+
+    /*
+    https://blog.csdn.net/u013274497/article/details/79041912
+    //Not test yet
+    public void changeVideoSize() {
+        int videoWidth = mediaPlayer.getVideoWidth();
+        int videoHeight = mediaPlayer.getVideoHeight();
+
+        //根据视频尺寸去计算->视频可以在sufaceView中放大的最大倍数。 float max;
+        if (getResources().getConfiguration().orientation== ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            //竖屏模式下按视频宽度计算放大倍数值 max = Math.max((float) videoWidth / (float) surfaceWidth,(float) videoHeight / (float) surfaceHeight);
+        } else{
+            //横屏模式下按视频高度计算放大倍数值 max = Math.max(((float) videoWidth/(float) surfaceHeight),(float) videoHeight/(float) surfaceWidth);
+        }
+
+        //视频宽高分别/最大倍数值 计算出放大后的视频尺寸 videoWidth = (int) Math.ceil((float) videoWidth / max);
+        videoHeight = (int) Math.ceil((float) videoHeight / max);
+
+        //无法直接设置视频尺寸，将计算出的视频尺寸设置到surfaceView 让视频自动填充。
+        surfaceView.setLayoutParams(new RelativeLayout.LayoutParams(videoWidth, videoHeight));
+    }
+    */
+
 }

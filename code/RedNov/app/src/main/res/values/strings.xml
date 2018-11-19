@@ -7,5 +7,11 @@
     <string name="play_list_infrared_ipc_ip">192.168.9.6</string>
     <string name="play_list_internet_ip">184.72.239.149</string>
     <string name="play_list_local_file_ip">127.0.0.1</string>
+    <string name="imgplay_description">play</string>
+    <string name="imgpause_description">pause</string>
+    <string name="imgstop_description">stop</string>
+    <string name="imgfullscreen_description">full screen</string>
+    <string name="imgnext_description">full screen</string>
+    <string name="seekbar_start_time">00:00:00</string>
 
 </resources>

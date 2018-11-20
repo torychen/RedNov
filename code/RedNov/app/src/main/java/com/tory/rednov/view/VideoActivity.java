@@ -25,7 +25,7 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 
 public class VideoActivity extends AppCompatActivity implements View.OnClickListener {
-    private static final String TAG = "VideoActivity>>>> ";
+    private static final String TAG = "VideoActivity---> ";
 
     //private static final String DEBUG_URI = "rtsp://admin:888888@192.168.9.100:10554/tcp/av0_0";
     private static final String DEBUG_URI_ONLINE = "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov";

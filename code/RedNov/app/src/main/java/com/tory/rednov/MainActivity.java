@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     //public native String stringFromJNI();
 
-    private static final String TAG = "MainActivity>>>> ";
+    private static final String TAG = "MainActivity---> ";
 
     //To show animation dialog when try to find device.
     private DiscoveryDialogFragment discoveryDialogFragment;

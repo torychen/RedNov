@@ -8,10 +8,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
 import com.tory.rednov.R;
@@ -19,6 +21,8 @@ import com.tory.rednov.utilities.UtiToast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
@@ -35,6 +39,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     private boolean isPlaying = false;
 
     private SurfaceView svVideoMain;
+
+    private RelativeLayout rlVideoCtrl;
 
     private MediaPlayer mediaPlayer;
 
@@ -121,6 +127,13 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             mediaPlayer.setMedia(media);
             mediaPlayer.play();
 
+            isPlaying = true;
+            ivPlay.setImageResource(R.drawable.player_pause);
+
+            rlVideoCtrl = findViewById(R.id.rlVideoCtrl);
+            rlVideoCtrl.setVisibility(View.INVISIBLE);
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -152,6 +165,28 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         }
 
         return uri;
+    }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d(TAG, "onTouchEvent: ");
+        rlVideoCtrl.setVisibility(View.VISIBLE);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        rlVideoCtrl.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+        }, 3000);
+
+        return super.onTouchEvent(event);
     }
 
     //TODO the player logic should be implemented.

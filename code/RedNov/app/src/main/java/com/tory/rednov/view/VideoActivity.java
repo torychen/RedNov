@@ -1,6 +1,8 @@
 package com.tory.rednov.view;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -8,15 +10,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.tory.rednov.R;
+import com.tory.rednov.utilities.SystemUtil;
 import com.tory.rednov.utilities.UtiToast;
 
 import java.io.File;
@@ -24,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.LibVLC;
 import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
@@ -44,11 +52,28 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
     private MediaPlayer mediaPlayer;
 
+    private SeekBar.OnSeekBarChangeListener onTimeSeekBarChangeListener;
+    private IVLCVout.Callback callback;
+    private MediaPlayer.EventListener eventListener;
+
+    private IVLCVout vlcVout;
+    private boolean isFullScreen = false;
+
+    private int videoWidth;
+    private int videoHight;
+
+
+
     private Uri videoUri;
 
     ImageView ivPlay;
 
     private static final boolean DEBUG_INPUT_IP = false;
+    private long totalTime;
+    private SeekBar seekBarTime;
+    private TextView tvTotalTime;
+    private TextView tvCurrentTime;
+    private ImageView ivFullScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,10 +116,41 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
+        tvTotalTime = findViewById(R.id.tvTotalTime);
+        tvCurrentTime = findViewById(R.id.tvCurrentTime);
 
-        SeekBar seekBar = findViewById(R.id.sbTime);
-        seekBar.setMax(100);
-        seekBar.setProgress(1);
+        seekBarTime = findViewById(R.id.sbTime);
+        onTimeSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                try {
+                    if (!mediaPlayer.isSeekable() || totalTime == 0) {
+                        return;
+                    }
+
+                    if (progress > totalTime) {
+                        progress = (int) totalTime;
+                    }
+
+                    if (fromUser) {
+                        mediaPlayer.setTime((long) progress);
+                        tvCurrentTime.setText(SystemUtil.getMediaTime(progress));
+                    }
+                } catch (Exception e) {
+                    Log.d("vlc-time", e.toString());
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        };
 
         ivPlay = findViewById(R.id.ivPlay);
         ivPlay.setOnClickListener(this);
@@ -106,6 +162,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         ivNext.setOnClickListener(this);
 
         svVideoMain  = findViewById(R.id.svVideoMain);
+        svVideoMain.getHolder().setKeepScreenOn(true);
+
         LibVLC libVLC;
         ArrayList<String> options = new ArrayList<>();
         libVLC = new LibVLC(getApplication(), options);
@@ -117,23 +175,124 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             }
 
             mediaPlayer = new MediaPlayer(libVLC);
+            vlcVout = mediaPlayer.getVLCVout();
 
-            mediaPlayer.getVLCVout().setVideoSurface(svVideoMain.getHolder().getSurface(), svVideoMain.getHolder());
-            //播放前还要调用这个方法
-            mediaPlayer.getVLCVout().attachViews();
+            callback = new IVLCVout.Callback() {
+                public void onNewLayout(IVLCVout ivlcVout, int width, int height, int i2, int i3, int i4, int i5) {
+                    try {
+                        totalTime = mediaPlayer.getLength();
+                        seekBarTime.setMax((int) totalTime);
+                        tvTotalTime.setText(SystemUtil.getMediaTime((int) totalTime));
+
+                        videoWidth = width;
+                        videoHight = height;
+                        Log.d(TAG, "onNewLayout: width is " + width + " height is " + height);
+
+                        WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+                        Display display = windowManager.getDefaultDisplay();
+
+                        Point point = new Point();
+                        display.getSize(point);
+
+                        ViewGroup.LayoutParams layoutParams = svVideoMain.getLayoutParams();
+                        layoutParams.width = point.x;
+                        layoutParams.height = (int) Math.ceil((float) videoHight * (float) point.x / (float) videoWidth);
+                        svVideoMain.setLayoutParams(layoutParams);
+                    } catch (Exception e) {
+                        Log.d("vlc-newlayout", e.toString());
+                    }
+                }
+
+                @Override
+                public void onSurfacesCreated(IVLCVout vlcVout) {
+
+                }
+
+                @Override
+                public void onSurfacesDestroyed(IVLCVout vlcVout) {
+
+                }
+
+                public void onHardwareAccelerationError(IVLCVout vlcVout) {
+                    Log.e(TAG, "onHardwareAccelerationError: something wrong.", null);
+                }
+            };
+
+            vlcVout.addCallback(callback);
+            vlcVout.setVideoView(svVideoMain);
+            vlcVout.attachViews();
 
             Media media = new Media(libVLC, videoUri);
 
             mediaPlayer.setMedia(media);
+            eventListener = new MediaPlayer.EventListener() {
+                @Override
+                public void onEvent(MediaPlayer.Event event) {
+                    try {
+                        if (event.getTimeChanged() == 0 || totalTime == 0 || event.getTimeChanged() > totalTime) {
+                            return;
+                        }
+
+                        seekBarTime.setProgress((int) event.getTimeChanged());
+                        tvCurrentTime.setText(SystemUtil.getMediaTime((int) event.getTimeChanged()));
+
+                        //播放结束
+                        if (mediaPlayer.getPlayerState() == Media.State.Ended) {
+                            seekBarTime.setProgress(0);
+                            mediaPlayer.setTime(0);
+                            tvTotalTime.setText(SystemUtil.getMediaTime((int) totalTime));
+                            mediaPlayer.stop();
+                            ivPlay.setImageResource(R.drawable.player_play);
+                        }
+                    } catch (Exception e) {
+                        Log.d("vlc-event", e.toString());
+                    }
+                }
+            };
+
+            mediaPlayer.setEventListener(eventListener);
+
+            ivFullScreen = findViewById(R.id.ivFullScreen);
+            ivFullScreen.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    isFullScreen = !isFullScreen;
+                    if (isFullScreen) {
+                        ivFullScreen.setImageResource(R.drawable.player_normal_screen);
+                        rlVideoCtrl.setVisibility(View.GONE);
+                        WindowManager.LayoutParams params = getWindow().getAttributes();
+                        params.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+                        getWindow().setAttributes(params);
+                        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                    } else {
+                        ivFullScreen.setImageResource(R.drawable.player_full_screen);
+                        rlVideoCtrl.setVisibility(View.VISIBLE);
+                        WindowManager.LayoutParams params = getWindow().getAttributes();
+                        params.flags &= (~WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        getWindow().setAttributes(params);
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+                    }
+                }
+            });
+
+
+
             mediaPlayer.play();
 
             isPlaying = true;
             ivPlay.setImageResource(R.drawable.player_pause);
 
             rlVideoCtrl = findViewById(R.id.rlVideoCtrl);
-            rlVideoCtrl.setVisibility(View.INVISIBLE);
 
-
+            RelativeLayout rlEntireScreen = findViewById(R.id.rlPlayer);
+            rlEntireScreen.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (isFullScreen) {
+                        rlVideoCtrl.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -168,26 +327,6 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d(TAG, "onTouchEvent: ");
-        rlVideoCtrl.setVisibility(View.VISIBLE);
-
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        rlVideoCtrl.setVisibility(View.INVISIBLE);
-                    }
-                });
-            }
-        }, 3000);
-
-        return super.onTouchEvent(event);
-    }
 
     //TODO the player logic should be implemented.
     @Override
@@ -205,12 +344,14 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
                 if (!isPlaying) {
                     isPlaying = true;
                     ivPlay.setImageResource(R.drawable.player_pause);
+                    mediaPlayer.play();
 
                     Log.d(TAG, "onClick: play");
                 } else {
                     isPlaying = false;
                     Log.d(TAG, "should pause video.");
                     ivPlay.setImageResource(R.drawable.player_play);
+                    mediaPlayer.pause();
                 }
 
                 break;
@@ -220,6 +361,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
+        resumePlay();
         if (mediaPlayer != null) {
             mediaPlayer.play();
         }
@@ -228,7 +370,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onPause() {
         super.onPause();
-        //videoView.pause();
+        pausePlay();
         if (mediaPlayer != null) {
             mediaPlayer.pause();
         }
@@ -237,7 +379,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onStop() {
         super.onStop();
-        //videoView.pause();
+        pausePlay();
         if (mediaPlayer != null) {
             mediaPlayer.stop();
         }
@@ -248,13 +390,41 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         super.onDestroy();
         isPlaying = false;
 
-        //videoView.suspend();
+        pausePlay();
         if (mediaPlayer != null) {
             mediaPlayer.release();
         }
 
         Log.d(TAG, "onDestroy: video");
     }
+
+    private void pausePlay() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            ivPlay.setImageResource(R.drawable.player_pause);
+        }
+
+        /*
+        vlcVout.detachViews();
+
+        seekBarTime.setOnSeekBarChangeListener(null);
+        vlcVout.removeCallback(callback);
+        mediaPlayer.setEventListener(null);
+        */
+    }
+
+    private void resumePlay() {
+        /*
+        vlcVout.setVideoView(svVideoMain);
+        vlcVout.attachViews();
+
+        seekBarTime.setOnSeekBarChangeListener(onTimeSeekBarChangeListener);
+        vlcVout.addCallback(callback);
+        mediaPlayer.setEventListener(eventListener);
+        */
+    }
+
+
 
     /*
     https://blog.csdn.net/u013274497/article/details/79041912

@@ -16,7 +16,7 @@ tools:context=".view.VideoActivity">
             android:id="@+id/svVideoMain"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="center"
             android:focusable="false" />
     </FrameLayout>
 
@@ -36,8 +36,9 @@ tools:context=".view.VideoActivity">
 
             <TextView
                 android:text="@string/seekbar_start_time"
+                android:textColor="@android:color/white"
                 android:id="@+id/tvCurrentTime"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="2dp"
@@ -58,7 +59,8 @@ tools:context=".view.VideoActivity">
 
 
             <TextView
-                android:layout_weight="1"
+                android:layout_weight="2"
+                android:textColor="@android:color/white"
                 android:text="@string/seekbar_start_time"
                 android:id="@+id/tvTotalTime"
                 android:layout_width="0dp"

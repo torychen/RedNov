@@ -338,6 +338,12 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
             case R.id.ivStop:
                 Log.d(TAG, "onClick: ivStop");
+                isPlaying = false;
+                Log.d(TAG, "should pause video.");
+                ivPlay.setImageResource(R.drawable.player_play);
+                mediaPlayer.stop();
+                seekBarTime.setProgress(0);
+
                 break;
 
             case R.id.ivPlay:

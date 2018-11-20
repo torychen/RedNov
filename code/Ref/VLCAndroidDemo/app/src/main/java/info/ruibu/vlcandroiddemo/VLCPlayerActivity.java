@@ -130,6 +130,7 @@ public class VLCPlayerActivity extends AppCompatActivity {
             mediaPlayer = new MediaPlayer(libvlc);
             vlcVout = mediaPlayer.getVLCVout();
             callback = new IVLCVout.Callback() {
+
                 @Override
                 public void onNewLayout(IVLCVout ivlcVout, int i, int i1, int i2, int i3, int i4, int i5) {
                     try {

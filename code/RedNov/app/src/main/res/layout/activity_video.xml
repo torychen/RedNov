@@ -102,6 +102,15 @@ tools:context=".view.VideoActivity">
                 android:src="@drawable/player_stop"
                 android:contentDescription="@string/imgstop_description" />
 
+            <ImageView
+                android:id="@+id/ivFullScreen"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/player_full_screen"
+                android:contentDescription="@string/imgnext_description" />
+
         </LinearLayout>
 
     </RelativeLayout>

@@ -2,21 +2,19 @@ package com.tory.rednov.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
-import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -28,8 +26,6 @@ import com.tory.rednov.utilities.UtiToast;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.videolan.libvlc.IVLCVout;
 import org.videolan.libvlc.LibVLC;
@@ -60,8 +56,9 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     private boolean isFullScreen = false;
 
     private int videoWidth;
-    private int videoHight;
-
+    private int videoHeight;
+    private int surfaceHeight;
+    private int surfaceWidth;
 
 
     private Uri videoUri;
@@ -84,6 +81,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             Log.d(TAG, "onCreate: no intent");
             return;
         }
+
+        getScreenSize();
 
         String videoType = intent.getStringExtra(getString(R.string.intent_key_video_type));
         if (TextUtils.isEmpty(videoType)) {
@@ -173,15 +172,27 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             vlcVout = mediaPlayer.getVLCVout();
 
             callback = new IVLCVout.Callback() {
-                public void onNewLayout(IVLCVout ivlcVout, int width, int height, int i2, int i3, int i4, int i5) {
+                /**
+                 * This callback is called when the native vout call request a new Layout.
+                 *
+                 * @param vlcVout vlcVout
+                 * @param width Frame width
+                 * @param height Frame height
+                 * @param visibleWidth Visible frame width
+                 * @param visibleHeight Visible frame height
+                 * @param sarNum Surface aspect ratio numerator
+                 * @param sarDen Surface aspect ratio denominator
+                 */
+                public void onNewLayout(IVLCVout vlcVout, int width, int height, int visibleWidth, int visibleHeight, int sarNum, int sarDen) {
                     try {
                         totalTime = mediaPlayer.getLength();
                         seekBarTime.setMax((int) totalTime);
                         tvTotalTime.setText(SystemUtil.getMediaTime((int) totalTime));
 
                         videoWidth = width;
-                        videoHight = height;
+                        videoHeight = height;
                         Log.d(TAG, "onNewLayout: width is " + width + " height is " + height);
+                        Log.d(TAG, "onNewLayout: visibleWidth is " + visibleWidth + " visibleHeight is " + visibleHeight);
 
                         WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
                         Display display = windowManager.getDefaultDisplay();
@@ -191,7 +202,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
                         ViewGroup.LayoutParams layoutParams = svVideoMain.getLayoutParams();
                         layoutParams.width = point.x;
-                        layoutParams.height = (int) Math.ceil((float) videoHight * (float) point.x / (float) videoWidth);
+                        layoutParams.height = (int) Math.ceil((float) videoHeight * (float) point.x / (float) videoWidth);
                         svVideoMain.setLayoutParams(layoutParams);
                     } catch (Exception e) {
                         Log.d("vlc-newlayout", e.toString());
@@ -259,6 +270,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
                         params.flags |= WindowManager.LayoutParams.FLAG_FULLSCREEN;
                         getWindow().setAttributes(params);
                         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+                        // FIXME: 2018/11/20 0020 crash changeVideoSize();
                     } else {
                         ivFullScreen.setImageResource(R.drawable.player_full_screen);
                         rlVideoCtrl.setVisibility(View.VISIBLE);
@@ -426,27 +439,52 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-
-    /*
-    https://blog.csdn.net/u013274497/article/details/79041912
-    //Not test yet
-    public void changeVideoSize() {
-        int videoWidth = mediaPlayer.getVideoWidth();
-        int videoHeight = mediaPlayer.getVideoHeight();
+    /**
+     * dose NOT work and cause program crash.
+     */
+    void changeVideoSize() {
+        float max;
 
         //根据视频尺寸去计算->视频可以在sufaceView中放大的最大倍数。 float max;
         if (getResources().getConfiguration().orientation== ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-            //竖屏模式下按视频宽度计算放大倍数值 max = Math.max((float) videoWidth / (float) surfaceWidth,(float) videoHeight / (float) surfaceHeight);
+            //竖屏模式下按视频宽度计算放大倍数值
+            max = Math.max((float) videoWidth / (float) surfaceWidth,(float) videoHeight / (float) surfaceHeight);
         } else{
-            //横屏模式下按视频高度计算放大倍数值 max = Math.max(((float) videoWidth/(float) surfaceHeight),(float) videoHeight/(float) surfaceWidth);
+            //横屏模式下按视频高度计算放大倍数值
+            max = Math.max(((float) videoWidth/(float) surfaceHeight),(float) videoHeight/(float) surfaceWidth);
         }
 
-        //视频宽高分别/最大倍数值 计算出放大后的视频尺寸 videoWidth = (int) Math.ceil((float) videoWidth / max);
+        //视频宽高分别/最大倍数值 计算出放大后的视频尺寸
+        videoWidth = (int) Math.ceil((float) videoWidth / max);
         videoHeight = (int) Math.ceil((float) videoHeight / max);
 
         //无法直接设置视频尺寸，将计算出的视频尺寸设置到surfaceView 让视频自动填充。
-        surfaceView.setLayoutParams(new RelativeLayout.LayoutParams(videoWidth, videoHeight));
+        svVideoMain.setLayoutParams(new RelativeLayout.LayoutParams(videoWidth, videoHeight));
     }
-    */
+
+    void getScreenSize() {
+        WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics dm = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(dm);
+        int width = dm.widthPixels;         // 屏幕宽度（像素）
+        int height = dm.heightPixels;       // 屏幕高度（像素）
+        float density = dm.density;         // 屏幕密度（0.75 / 1.0 / 1.5）
+        int densityDpi = dm.densityDpi;     // 屏幕密度dpi（120 / 160 / 240）
+        // 屏幕宽度算法:屏幕宽度（像素）/屏幕密度
+        int screenWidth = (int) (width / density);  // 屏幕宽度(dp)
+        int screenHeight = (int) (height / density);// 屏幕高度(dp)
+
+
+        Log.d(TAG, "屏幕宽度（像素）：" + width);
+        Log.d(TAG, "屏幕高度（像素）：" + height);
+        Log.d(TAG, "屏幕密度（0.75 / 1.0 / 1.5）：" + density);
+        Log.d(TAG, "屏幕密度dpi（120 / 160 / 240）：" + densityDpi);
+        Log.d(TAG, "屏幕宽度（dp）：" + screenWidth);
+        Log.d(TAG, "屏幕高度（dp）：" + screenHeight);
+
+        surfaceWidth = screenWidth;
+        surfaceHeight = screenHeight;
+    }
+
 
 }

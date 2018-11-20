@@ -2,6 +2,7 @@ package com.tory.rednov;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -67,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //IPCam list to be shown on View.
     List<IPCamItem> ipCamList;
     IPCamListViewAdapter ipCamListViewAdapter;
+    private String userAddIP;
 
 
     //FindDevicesThread.FindDevicesListener callback.
@@ -186,6 +190,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 IPCamItem ipCamItem = ipCamList.get(position);
                 if (TextUtils.isEmpty(ipCamItem.getIp())) {
                     Log.d(TAG, "onItemClick: an empty item");
+                    final EditText editText = new EditText(MainActivity.this);
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Please input ip address and port")
+                            .setIcon(android.R.drawable.ic_dialog_info)
+                            .setView(editText)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    userAddIP = editText.getText().toString();
+                                }
+                            })
+                            .setNegativeButton("CANCEL", null)
+                            .show();
+
+                    Log.d(TAG, "onItemClick: your input is " + userAddIP);
+                    // TODO: 2018/11/20 0020  add new item to both cam list and device list.
+
                 } else {
                     String ip = ipCamItem.getIp();
                     Log.d(TAG, "onItemClick: ip is " + ip);
@@ -216,6 +237,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Init Device for FindDeviceThread.
         devices = new ArrayList<>();
 
+    }
+
+    /**
+     * validate user input ip.
+     * @param userAddIP
+     * @return
+     */
+    // TODO: 2018/11/20 0020 need implementation
+    private boolean validateIP(String userAddIP) {
+        return true;
     }
 
     @Override

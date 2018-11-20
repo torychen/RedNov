@@ -11,6 +11,10 @@ public class IPCamItem {
         this.position = pos;
     }
 
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
     public String getIp()
     {
         return ip;

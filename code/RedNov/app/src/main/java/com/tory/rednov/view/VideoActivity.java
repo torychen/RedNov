@@ -85,29 +85,24 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
-        String ip = intent.getStringExtra(getString(R.string.intent_key_ip));
-        Log.d(TAG, "onCreate: the ip is " + ip);
-        videoUri = getUri(ip);
-        if (videoUri == null) {
-            UtiToast.Toast("The ip is invalid, please check out.");
-            finish();
-        }
-
-        //TODO debug why crash.
-        /*
-        String videoType = intent.getStringExtra("VideoType");
+        String videoType = intent.getStringExtra(getString(R.string.intent_key_video_type));
         if (TextUtils.isEmpty(videoType)) {
             Log.d(TAG, "onCreate: no video type in intent");
             return;
         }
 
-        if (videoType.equals("Local")) {
-            videoUri = Uri.parse(intent.getStringExtra("VideoUrl"));
+        if (videoType.equals(getString(R.string.intent_value_video_type_local))) {
+            File file = new File(intent.getStringExtra("FilePath"));
+            videoUri = Uri.fromFile(file);
         } else {
-
+            String ip = intent.getStringExtra(getString(R.string.intent_key_ip));
+            Log.d(TAG, "onCreate: the ip is " + ip);
+            videoUri = getUri(ip);
+            if (videoUri == null) {
+                UtiToast.Toast("The ip is invalid, please check out.");
+                finish();
+            }
         }
-        */
-
 
         Log.d(TAG, "onCreate: the uri is " + videoUri);
 
@@ -328,12 +323,12 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
 
 
 
-    //TODO the player logic should be implemented.
+    //TODO the player logic should be carefully reviewed.
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ivNext:
-                Log.d(TAG, "onClick: ivFullScreen");
+                Log.d(TAG, "onClick: ivNext");
                 break;
 
             case R.id.ivStop:
@@ -367,8 +362,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onResume() {
         super.onResume();
-        resumePlay();
         if (mediaPlayer != null) {
+            resumePlay();
             mediaPlayer.play();
         }
     }
@@ -376,8 +371,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onPause() {
         super.onPause();
-        pausePlay();
         if (mediaPlayer != null) {
+            pausePlay();
             mediaPlayer.pause();
         }
     }
@@ -385,8 +380,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onStop() {
         super.onStop();
-        pausePlay();
         if (mediaPlayer != null) {
+            pausePlay();
             mediaPlayer.stop();
         }
     }
@@ -396,8 +391,8 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         super.onDestroy();
         isPlaying = false;
 
-        pausePlay();
         if (mediaPlayer != null) {
+            pausePlay();
             mediaPlayer.release();
         }
 

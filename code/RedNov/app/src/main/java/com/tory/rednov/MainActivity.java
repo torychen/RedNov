@@ -28,6 +28,7 @@ import com.tory.rednov.model.AppSettings;
 import com.tory.rednov.model.Device;
 import com.tory.rednov.model.IPCApplication;
 import com.tory.rednov.model.IPCam;
+import com.tory.rednov.utilities.SystemUtil;
 import com.tory.rednov.utilities.UtiToast;
 import com.tory.rednov.view.AppSettingsActivity;
 import com.tory.rednov.view.DiscoveryDialogFragment;
@@ -69,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     //FindDevicesThread.FindDevicesListener callback.
+
+
     @Override
     public void searchResult(final ArrayList<Device> devices) {
         Device device;
@@ -85,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         } else {
             //No device found, for debug purpose, manually create some.
-            if(IPCApplication.getAppSettings().getDebugFlag()) {
+            if (IPCApplication.getAppSettings().getDebugFlag()) {
                 device = new Device();
                 device.setIpAddress(getString(R.string.play_list_local_file_ip));
                 this.devices.add(device);
@@ -106,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 ipCamItem = new IPCamItem(getString(R.string.play_list_internet_ip), R.drawable.ic_ipcam, 2);
                 ipCamList.add(ipCamItem);
-
 
 
                 ipCamItem = new IPCamItem("", R.drawable.ic_add, 3);
@@ -136,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab:
-                discoveryDialogFragment.show(getSupportFragmentManager(),"Discovering");
+                discoveryDialogFragment.show(getSupportFragmentManager(), "Discovering");
 
                 new FindDevicesThread(MainActivity.this, MainActivity.this).start();
                 break;
@@ -189,30 +191,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "onItemClick: ip is " + ip);
                     if (ip.equals(getString(R.string.play_list_local_file_ip))) {
                         //Need to request SD card authority.
-                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            //TODO debug crash.  intent.setType("*/*");
-                            Log.i(TAG, "onItemClick: to avoid warning.");
-                            /*
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                                PackageManager.PERMISSION_GRANTED) {
+
                             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                            <CCC intent.setType here>
-
+                            intent.setType("*/*");
                             startActivityForResult(intent, VIDEO_REQUEST);
-                            */
-
                         } else {
                             //请求权限
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
                             return;
                         }
-
-
+                    } else {
+                        Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+                        intent.putExtra(getString(R.string.intent_key_video_type), getString(R.string.intent_value_video_type_remote));
+                        intent.putExtra(getString(R.string.intent_key_ip), ip);
+                        startActivity(intent);
                     }
-
-                    Intent intent = new Intent(MainActivity.this, VideoActivity.class);
-                    intent.putExtra("VideoType", "Remote");
-                    intent.putExtra(getString(R.string.intent_key_ip), ip);
-                    startActivity(intent);
-
                 }
 
             }
@@ -230,14 +225,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (requestCode) {
             case PERMISSIONS_REQUEST: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    //intent.setType("*/*");
-                    //startActivityForResult(intent, VIDEO_REQUEST);
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("*/*");
+                    startActivityForResult(intent, VIDEO_REQUEST);
 
-                    Intent intent = new Intent(MainActivity.this, VideoActivity.class);
-                    intent.putExtra("VideoType", "local");
-                    intent.putExtra(getString(R.string.intent_key_ip), getString(R.string.play_list_local_file_ip));
-                    startActivity(intent);
+
                 }
             }
         }
@@ -250,15 +242,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (requestCode == VIDEO_REQUEST && data != null) {
                 Intent intent = new Intent(MainActivity.this, VideoActivity.class);
-                Log.d(TAG, "onActivityResult: local file return is " + data.getData());
+                Log.d(TAG, "onActivityResult: content provider return local file is " + data.getData());
 
-                //TODO debug why crash by this.
-                /*
-                intent.putExtra("VideoType", "Local");
-                intent.putExtra("VideoUrl", data.getData());
-                 */
+                intent.putExtra(getString(R.string.intent_key_video_type), getString(R.string.intent_value_video_type_local));
+                String path = SystemUtil.getPath(MainActivity.this, data.getData());
+                Log.d(TAG, "onActivityResult: parse content provider return local file is " + path);
 
-                intent.putExtra(getString(R.string.intent_key_ip), getString(R.string.play_list_local_file_ip));
+                intent.putExtra("FilePath", path);
+
                 startActivity(intent);
             }
         } catch (Exception e) {

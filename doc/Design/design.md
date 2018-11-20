@@ -90,9 +90,13 @@ Apply Cancel
 2018-11-16
 可以 手动添加设备
 
-viewo view 播放 rtsp
+【done】 viewo view 播放 rtsp
 
-debug情况下， list 里有本地文件，默认 ipc ，默认网络 调试视频
+【done】 debug情况下， list 里有本地文件，默认 ipc ，默认网络 调试视频
 
+
+2018-11-20
+
+【done】 播放本地文件，rtsp文件， 搜索rtsp ok
 
 

@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //public native String stringFromJNI();
 
     private static final String TAG = "MainActivity---> ";
+    private static final int VIDEO_REQUEST = 1;
+    private static final int PERMISSIONS_REQUEST = 0;
 
     //To show animation dialog when try to find device.
     private DiscoveryDialogFragment discoveryDialogFragment;
@@ -185,9 +187,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     String ip = ipCamItem.getIp();
                     Log.d(TAG, "onItemClick: ip is " + ip);
+                    if (ip.equals(getString(R.string.play_list_local_file_ip))) {
+                        //Need to request SD card authority.
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                            //TODO debug crash.  intent.setType("*/*");
+                            Log.i(TAG, "onItemClick: to avoid warning.");
+                            /*
+                            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                            <CCC intent.setType here>
+
+                            startActivityForResult(intent, VIDEO_REQUEST);
+                            */
+
+                        } else {
+                            //请求权限
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
+                            return;
+                        }
+
+
+                    }
+
                     Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+                    intent.putExtra("VideoType", "Remote");
                     intent.putExtra(getString(R.string.intent_key_ip), ip);
                     startActivity(intent);
+
                 }
 
             }
@@ -196,9 +221,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Init Device for FindDeviceThread.
         devices = new ArrayList<>();
 
-        //For debug purpose request sd permission
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{ Manifest.permission. WRITE_EXTERNAL_STORAGE }, 1);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    //intent.setType("*/*");
+                    //startActivityForResult(intent, VIDEO_REQUEST);
+
+                    Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+                    intent.putExtra("VideoType", "local");
+                    intent.putExtra(getString(R.string.intent_key_ip), getString(R.string.play_list_local_file_ip));
+                    startActivity(intent);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        try {
+            super.onActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == VIDEO_REQUEST && data != null) {
+                Intent intent = new Intent(MainActivity.this, VideoActivity.class);
+                Log.d(TAG, "onActivityResult: local file return is " + data.getData());
+
+                //TODO debug why crash by this.
+                /*
+                intent.putExtra("VideoType", "Local");
+                intent.putExtra("VideoUrl", data.getData());
+                 */
+
+                intent.putExtra(getString(R.string.intent_key_ip), getString(R.string.play_list_local_file_ip));
+                startActivity(intent);
+            }
+        } catch (Exception e) {
+            Log.d("Local", e.toString());
         }
     }
 
@@ -286,18 +350,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onStart: ");
     }
 
-    //For sd permission
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case 1:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "onRequestPermissionsResult: ok");
-                } else {
-                    Toast.makeText(this, "拒绝权限将无法使用程序", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            default:
-        }
-    }
 }

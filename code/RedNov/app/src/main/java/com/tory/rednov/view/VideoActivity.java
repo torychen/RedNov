@@ -49,6 +49,11 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video);
         Intent intent = getIntent();
+        if (intent == null) {
+            Log.d(TAG, "onCreate: no intent");
+            return;
+        }
+
         String ip = intent.getStringExtra(getString(R.string.intent_key_ip));
         Log.d(TAG, "onCreate: the ip is " + ip);
         videoUri = getUri(ip);
@@ -56,6 +61,22 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             UtiToast.Toast("The ip is invalid, please check out.");
             finish();
         }
+
+        //TODO debug why crash.
+        /*
+        String videoType = intent.getStringExtra("VideoType");
+        if (TextUtils.isEmpty(videoType)) {
+            Log.d(TAG, "onCreate: no video type in intent");
+            return;
+        }
+
+        if (videoType.equals("Local")) {
+            videoUri = Uri.parse(intent.getStringExtra("VideoUrl"));
+        } else {
+
+        }
+        */
+
 
         Log.d(TAG, "onCreate: the uri is " + videoUri);
 

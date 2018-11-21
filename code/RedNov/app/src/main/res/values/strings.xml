@@ -16,5 +16,11 @@
     <string name="intent_key_video_type">VideoType</string>
     <string name="intent_value_video_type_local">local</string>
     <string name="intent_value_video_type_remote">remote</string>
+    <string name="nav_company_loc">成都高新区天府大道中段500号</string>
+    <string name="nav_company_name">众乐泰科技股份有限公司</string>
+    <string name="nav_company_tel">02862567062</string>
+    <string name="nav_company_email">mail.zlt-tech.cn</string>
+    <string name="nav_name">Tory Chen</string>
+    <string name="nav_email">ToryChen@sina.com</string>
 
 </resources>

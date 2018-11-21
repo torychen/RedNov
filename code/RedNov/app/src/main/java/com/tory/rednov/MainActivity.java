@@ -13,11 +13,15 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -72,8 +76,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     IPCamListViewAdapter ipCamListViewAdapter;
     private String userAddIP;
 
-
     //FindDevicesThread.FindDevicesListener callback.
+
+    private DrawerLayout drawerLayout;
 
 
     @Override
@@ -156,6 +161,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        drawerLayout = findViewById(R.id.drawer_layout);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null ) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            //actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+        }
+
+
+
         //Restore state by Bundle
         if (savedInstanceState != null) {
             savedInstanceState.get("save_something");
@@ -221,7 +235,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         } else {
                             //请求权限
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST);
-                            return;
                         }
                     } else {
                         Intent intent = new Intent(MainActivity.this, VideoActivity.class);
@@ -241,8 +254,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * validate user input ip.
-     * @param userAddIP
-     * @return
+     * @param userAddIP the user input string which should follow num+dot style.
+     * @return true when ip is valid.
      */
     // TODO: 2018/11/20 0020 need implementation
     private boolean validateIP(String userAddIP) {
@@ -307,10 +320,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //tory pass. UtiToast.Toast("you click settings.");
             Intent intent = new Intent(MainActivity.this, AppSettingsActivity.class);
             startActivity(intent);
-            return true;
+        } else if (id == R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
+            Log.d(TAG, "onOptionsItemSelected: open drawer.");
+        } else {
+
+            return super.onOptionsItemSelected(item);
         }
 
-        return super.onOptionsItemSelected(item);
+        return true;
+
     }
 
     void updateAppSettings() {

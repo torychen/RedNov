@@ -82,7 +82,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
 
-        getScreenSize();
+        //todo show full screen. getScreenSize();
 
         String videoType = intent.getStringExtra(getString(R.string.intent_key_video_type));
         if (TextUtils.isEmpty(videoType)) {
@@ -462,6 +462,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         svVideoMain.setLayoutParams(new RelativeLayout.LayoutParams(videoWidth, videoHeight));
     }
 
+    /*
     void getScreenSize() {
         WindowManager wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics dm = new DisplayMetrics();
@@ -485,6 +486,7 @@ public class VideoActivity extends AppCompatActivity implements View.OnClickList
         surfaceWidth = screenWidth;
         surfaceHeight = screenHeight;
     }
+    */
 
 
 }

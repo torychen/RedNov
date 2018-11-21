@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null ) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            //actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
         }
 
 
@@ -313,23 +313,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                //tory pass. UtiToast.Toast("you click settings.");
+                Intent intent = new Intent(MainActivity.this, AppSettingsActivity.class);
+                startActivity(intent);
+                break;
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                break;
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            //tory pass. UtiToast.Toast("you click settings.");
-            Intent intent = new Intent(MainActivity.this, AppSettingsActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.home) {
-            drawerLayout.openDrawer(GravityCompat.START);
-            Log.d(TAG, "onOptionsItemSelected: open drawer.");
-        } else {
-
-            return super.onOptionsItemSelected(item);
+            default:
+                return super.onOptionsItemSelected(item);
         }
 
         return true;
-
     }
 
     void updateAppSettings() {

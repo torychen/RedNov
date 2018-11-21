@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RedNov</string>
+    <string name="app_name">IPCamPlayer</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_app_settings">App Settings</string>
     <string name="btn_play">play</string>
